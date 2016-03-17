@@ -43,14 +43,14 @@ RPS.Player.Ada.prototype.throwMove = function() {
 /*
  *	Adjust Probabilities				   
  */	
-function adjust(repeatOn, switchOn) {
-	
+function adjust(repeatOn, switchOn, confidence) {
+
 	// if opp might repeat
 	if (repeatOn > switchOn) {
-		return - this.confidence; // Ada shouldnt play this.
+		return -(confidence); // Ada shouldnt play this.
 	} else if (switchOn > repeatOn) {
-		return += this.confidence;
-	}
+		return   confidence;
+	} else { return 0;}
 }
 
 /*
@@ -60,14 +60,17 @@ RPS.Player.Ada.prototype.addResult = function(result, opponentMove) {
 
 	debugger;
 
+	// TODO: why does result 0 become -0 ?
+	result = Math.abs(result);
+
 	// Add opponent move to moves played scoreboard
 	this.movesPlayed[ opponentMove - 1 ] += 1;
 
 	// Confidence is reflected in the wins
 	if (result == 1) {
-		this.confidence ++;
+		this.confidence += 1 ;
 	} else if (result == -1) {
-		this.confidence -- ;
+		this.confidence -= 2 ;
 	}
 
 
@@ -92,38 +95,38 @@ RPS.Player.Ada.prototype.addResult = function(result, opponentMove) {
 		}
 	}
 				   
-	var willRepeat, willSwitch;
+	var repOn = 0, swiOn = 0;
 
 	switch(result) {
 		case 1:
-			var repOn = this.repeatOnWin;
-			var swiOn = this.switchOnWin;
+			repOn = this.repeatOnWin;
+			swiOn = this.switchOnWin;
 			break;
 		case 0:
-			var repOn = this.repeatOnDraw;
-			var swiOn = this.switchOnDraw;
+			repOn = this.repeatOnDraw;
+			swiOn = this.switchOnDraw;
 			break;
-		default:
-			var repOn = this.repeatOnLoss;
-			var swiOn = this.switchOnLoss;
+		default: // -1
+			repOn = this.repeatOnLoss;
+			swiOn = this.switchOnLoss;
 	} 
 
 	debugger;
 
-	var primary, secondary;
+	var conf = this.confidence
 
 	switch(opponentMove) {
 		case 1:
-			this.scissorsProbability 	+= adjust(repOn, swiOn);
-			this.rockProbability 		+= (adjust(repOn, swiOn) / 2);
+			this.scissorsProbability 	+= adjust(repOn, swiOn, conf);
+			this.rockProbability 		+= (adjust(repOn, swiOn, conf) / 2);
 			break;
 		case 2:
-			this.rockProbability 		+= adjust(repOn, swiOn);
-			this.paperProbability 		+= (adjust(repOn, swiOn) / 2);
+			this.rockProbability 		+= adjust(repOn, swiOn, conf);
+			this.paperProbability 		+= (adjust(repOn, swiOn, conf) / 2);
 			break;
 		default: 
-			this.paperProbability 		+= adjust(repOn, swiOn);
-			this.scissorsProbability 	+= (adjust(repOn, swiOn) / 2);
+			this.paperProbability 		+= adjust(repOn, swiOn, conf);
+			this.scissorsProbability 	+= (adjust(repOn, swiOn, conf) / 2);
 	}
 
 
