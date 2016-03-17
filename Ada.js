@@ -58,8 +58,6 @@ function adjust(repeatOn, switchOn, confidence) {
  */
 RPS.Player.Ada.prototype.addResult = function(result, opponentMove) {
 
-	debugger;
-
 	// TODO: why does result 0 become -0 ?
 	result = Math.abs(result);
 
@@ -144,6 +142,41 @@ RPS.Player.Ada.prototype.addResult = function(result, opponentMove) {
 			this.nextMove = RPS.Moves.ROCK;
 	} else {
 		this.nextMove = RPS.Moves.SCISSORS;
+	}
+
+	// rebalance everything
+	if (this.paperProbability > 70) {
+		this.paperProbability = 50;
+	}
+	if (this.rockProbability > 70) {
+		this.rockProbability = 50;
+	}
+	if (this.scissorsProbability > 70) {
+		this.scissorsProbability = 50;
+	}
+
+	if (this.repeatOnWin > this.switchOnWin + this.forgetfulness) {
+		this.repeatOnWin -= 2;
+	}
+	if (this.repeatOnDraw > this.switchOnDraw + this.forgetfulness) {
+		this.repeatOnWin -= 2;
+	}
+	if (this.repeatOnLoss > this.switchOnLoss + this.forgetfulness) {
+		this.repeatOnWin -= 2;
+	}
+
+	if (this.switchOnWin > this.repeatOnWin + this.forgetfulness) {
+		this.switchOnWin -= 2;
+	}
+	if (this.switchOnDraw > this.repeatOnDraw + this.forgetfulness) {
+		this.switchOnDraw -= 2;
+	}
+	if (this.switchOnLoss > this.repeatOnLoss + this.forgetfulness) {
+		this.switchOnLoss -= 2;
+	}
+
+	if (confidence < 1) {
+		confidence = 2;
 	}
 
 }
