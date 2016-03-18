@@ -29,8 +29,7 @@ RPS.Player.MetaRand.prototype.patternMatch = function() {
 		if (prediction != undefined) {
 			return parseInt(prediction);
 		} else {
-			// TODO: return random by frequency analysis
-			return this.trumpMostPlayed(this.oppMoveCount);
+			return RPS.randomMove();
 		}
 };
 
