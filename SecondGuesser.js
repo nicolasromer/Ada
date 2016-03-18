@@ -9,6 +9,9 @@ RPS.Player.MetaRand = function() {
 	//Keep track :       R  P  S
 	this.oppMoveCount = [0, 0, 0];
 	this.myLastMove = 1;
+
+	this.provenSpan = 0;
+
 };
 
 RPS.Player.MetaRand.NAME = 'MetaRand';
@@ -16,52 +19,76 @@ RPS.Player.MetaRand.NAME = 'MetaRand';
 RPS.Player.MetaRand.Memory = "";
 RPS.Player.MetaRand.Strategy = 'random';
 
+//Trump most played move
+RPS.Player.MetaRand.prototype.trumpMostPlayed = function (arr) {
+
+	//scan for number of occurences in a slice of history
+	slice = RPS.Player.MetaRand.Memory.slice()
+
+
+	//vary the slice to find something optimal
+
+
+
+	var index = arr.indexOf( Math.max(...arr));
+	return RPS.trumps(index + 1);
+}
+
 //Check if the recent pattern of moves has occurred in memory
+//   Recurse with ever shorter spans
 RPS.Player.MetaRand.prototype.patternMatch = function(span) {
 
-		var hist = RPS.Player.MetaRand.Memory,
-			prediction = undefined;
+	if (span > 4 && RPS.Player.MetaRand.Memory.length > span * 2) {
+		var hist = RPS.Player.MetaRand.Memory;
+		var	prediction = undefined;
 
 		// TODO: rate range of pattern lengths based on effectiveness
 		var pattern = hist.slice(hist.length - span);
+
+		//remove the pattern so that we don't get it in our search
 		var past = hist.slice(0, -span);
 
+		//Check if our past contains the pattern and grab the index
 		var index = past.indexOf( pattern );
 
-		if (index !== -1) {
+		//If a match was found
+		if (index > 0) {
+			//set this span as provenspan
+			this.provenSpan = span;
+
+			// get the move occurring after found pattern
 			prediction = hist[index + pattern.length];
-		}
-
-		if (prediction !== undefined) {
 			return parseInt(prediction);
-		} else {
-			return RPS.randomMove();
-		}
 
-};
+		//Recurse with a shorter search span
+		} else { arguments.callee(span - 5) }
+	} else {
+		return RPS.randomMove()
+	}
+}
 
 RPS.Player.MetaRand.prototype.throwMove = function() {
 
-	var strat = RPS.Player.MetaRand.Strategy,
-		myMove = RPS.randomMove();
-	if (strat == 'frequency analysis') {
-		myMove = trumpMostPlayed(this.oppMoveCount);
-	} else if (strat == 'pattern matching') {
-		myMove = this.patternMatch(10);
-	} else if (strat == 'trump my last move') {
+	var strat = RPS.Player.MetaRand.Strategy;
+	var	myMove = RPS.randomMove();
+
+	if (strat === 'frequency analysis') {
+		myMove = this.trumpMostPlayed(this.oppMoveCount);
+	} else if (strat === 'pattern matching') {
+
+		//Check if there is an optimal span
+		myMove = this.patternMatch(this.provenSpan ? this.provenSpan : 20);
+		debugger;
+
+	} else if (strat === 'trump my last move') {
 			myMove = RPS.trumps(this.myLastMove);
 	}
 
 	// store the move for reference next round
 	this.myLastMove = myMove;
 
+	debugger;
 	return myMove;
-
-	// trump the most played move
-	function trumpMostPlayed(arr) {
-			var index = arr.indexOf( Math.max(...arr));
-			return RPS.trumps(index + 1);
-	}
 
 };
 
@@ -77,16 +104,15 @@ RPS.Player.MetaRand.prototype.addResult = function(result, opponentMove) {
 
 	// adjust confidence level, biased towards losing
 	if (result === 1) {
-		this.confidence += 1
+		this.confidence += 1;
 	} else {
 		this.confidence -= 2;
 	}
-	/*
-	 * TODO: replace 'confidence' with rating system for strategies 
-	 *       testing how each would do against the match results
-	 *
-	 * TODO: establish rating system for secondGuessing
-	 */
+	
+	/* TODO: replace 'confidence' with rating system for strategies 
+	          testing how each would do against the match results */ 
+	// TODO: establish rating system for secondGuessing
+	
 
 	// if confidence hits rock bottom randomly switch strategy
 	if (this.confidence < 1) {
