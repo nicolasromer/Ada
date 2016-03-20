@@ -69,7 +69,7 @@ string_copy_iter(char* destination, const char* source) {
  *   		~Body recursion~ 
  *			bears a risk of stack overflow, or a buffer overflow on the space allocated the call stack
  *
- * 			better to use tail recursion:
+ * 			better to use tail recursion to take advantage of call elimination:
  * 			"it often asymptotically reduces stack space requirements
  * 				from linear, or O(n), to constant, or O(1)."
  */
