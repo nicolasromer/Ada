@@ -1,52 +1,54 @@
 #import <stdio.h>
+#import <stdlib.h>
+#import <string.h>
 
 //forward declarations
 char* string_copy_iter(char* destination, const char* source);
 char* string_copy_recur(char* destination, const char* source);
-char* strcpy(char *s1, const char *s2);
+//char* strcpy(char *s1, const char *s2);
 
 
-int main(int argc, char* argv[]) {
+int
+main(int argc, char* argv[]) {
 
-	char src[40];
-	char dest[100];
+/*	Security risk:
+ *	 	 	~buffer overflow~ 
+ *			if using a string copy function with a source string of unknown size
+ *			(for example: using the gets() function)
+ *			or simply failing to set a destination as large or larger
+ *				 than the source + null byte.
+ *	  		strcpy could overwrite the stack frame and cause unpredictable behaviour
+ *		 		or be exploited my an attacker.
+ */
 
-	// Security risk:
-	//   ~buffer overflow~ if using strcpy with a source string of unknown size:
-	//   strcpy could write beyond allocated memory and cause unpredictable behaviour.
+	char* temp_dest;
+	char* final_dest;
+	char* str = "This is the test string";
 
-	// strcpy doesnt null terminate, so pre-allocating would be a good idea as well:
-	// memset(dest, '\0', sizeof(dest));
+	// allocate the correct amount of memory
+	int i;
+	i = strlen(str);
+	temp_dest = (char*) malloc (i + 1); 
+	final_dest = (char*) malloc (i + 1); 
 
-	strcpy(src, "This is the strcpy string");
-	strcpy(dest, src);
-	printf("Final copied string : %s\n", dest);
 
+	printf("The test string requires: %d + 1 bytes in memory\n", i );
 
-	string_copy_iter(src, "This is the iter string");
-	string_copy_iter(dest, src);
-	printf("Final copied string : %s\n", dest);
+	strcpy(temp_dest, str);
+	strcpy(final_dest, temp_dest);
+	printf("Copy with strcpy : %s\n", final_dest);
 
-	string_copy_recur(src, "This is the recur string");
-	string_copy_recur(dest, src);
-	printf("Final copied string : %s\n", dest);
+	string_copy_iter(temp_dest, str);
+	string_copy_iter(final_dest, temp_dest);
+	printf("Copy by iterating : %s\n", final_dest);
+
+	string_copy_recur(temp_dest, str);
+	string_copy_recur(final_dest, temp_dest);
+	printf("Copy by recursing : %s\n", final_dest);
+
 
 	return(0);
 }
-
-
-// The original strcpy source
-// doesn't null terminate the string
-// or set the buffer size explicitly
-char *
-strcpy(char *s1, const char *s2)
-{
-    char *s = s1;
-    while ((*s++ = *s2++) != 0)
-	;
-    return (s1);
-}
-
 
 char * 
 string_copy_iter(char* destination, const char* source) {
@@ -63,11 +65,13 @@ string_copy_iter(char* destination, const char* source) {
 }
 
 /*
- * Body recursion bears a risk of stack overflow 
+ * 	Security risk:
+ *   		~Body recursion~ 
+ *			bears a risk of stack overflow, or a buffer overflow on the space allocated the call stack
  *
- * better to try tail recusrion:
- * 'it often asymptotically reduces stack space requirements
- * from linear, or O(n), to constant, or O(1).''
+ * 			better to use tail recursion:
+ * 			"it often asymptotically reduces stack space requirements
+ * 				from linear, or O(n), to constant, or O(1)."
  */
  
 char *
