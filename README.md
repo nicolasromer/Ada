@@ -1,0 +1,1 @@
+A couple simple AIs to play Rock Paper Scissors. The most effective is certainly MetaRand, because it is the most unpredictable – it implements a genetic algorithm, where it will heuristically improve its strategy. 
