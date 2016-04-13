@@ -8,10 +8,7 @@
         this.paranoia = 0;
 
         //Keep track :       R  P  S
-        this.oppMoveCount = [0, 0, 0];
         this.myMoveCount = [0, 0, 0];
-        this.myLastMove = 2;
-        this.oppLastMove = 1;
     };
 
     RPS.Player.MetaRand.NAME = 'MetaRand';
@@ -44,10 +41,10 @@
                 return parseInt(prediction);
 
             //Recurse with a shorter search span
-            } else { arguments.callee(span - 5); }
-        } else {
-            return RPS.randomMove();
-        }
+            } else { arguments.callee(Math.floor(span/2)); }
+        } 
+        return RPS.randomMove();
+        
     };
 
     RPS.Player.MetaRand.prototype.throwMove = function() {
@@ -55,18 +52,20 @@
         var s = RPS.Player.MetaRand.Strategy;
         var m = RPS.randomMove();
 
-        if (s === 'outwit') {
+        if (s == 'outwit') {
 
-            // my most playd move
-            myMostPlayed = this.myMoveCount.indexOf( Math.max(...this.myMoveCount)) + 1;
-            //double trump.
+            myMostPlayed = this.myMoveCount.indexOf( Math.max(...this.myMoveCount)) + 1;.
             m = RPS.trumps(RPS.trumps(myMostPlayed));
 
-        } else if (s === 'pattern matching') {
+        } else if (s == 'pattern matching') {
+
             //Check if there is an optimal span
             m = this.patternMatch(25);
-        } else if (s === 'trump my last move') {
+
+        } else if (s == 'trump my last move') {
+
             m = RPS.trumps(this.myLastMove);
+
         }
 
         // store the move for reference
@@ -97,20 +96,19 @@
 
         // if confidence hits rock bottom randomly switch strategy
         if (this.confidence < 1) {
-            var rand = Math.floor((Math.random() * 6) + 1);
+            var rand = Math.floor((Math.random() * 5) + 1);
             switch (rand) {
                 case 1:
                 case 2:
                     RPS.Player.MetaRand.Strategy = 'pattern matching'; //decimates
                     break;
+                case 3:
                 case 4:
-                case 5:
                     RPS.Player.MetaRand.Strategy = 'outwit'; //doubletrumps trumper
                     break;    
                 default:
                     RPS.Player.MetaRand.Strategy = 'random'; //Good ole random
             }
-            this.paranoia = 0;
             this.confidence = 10;
         }
     };
